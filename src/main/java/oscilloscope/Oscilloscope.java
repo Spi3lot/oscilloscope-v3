@@ -1,7 +1,6 @@
 package oscilloscope;
 
 import processing.core.PApplet;
-import processing.core.PShape;
 import processing.opengl.PShader;
 import processing.sound.AudioSample;
 import processing.sound.SoundFile;
