@@ -1,10 +1,13 @@
 package oscilloscope;
 
+import oscilloscope.service.FrameRetriever;
+import oscilloscope.service.Shading;
 import oscilloscope.service.Waveforms;
 import processing.core.PApplet;
 import processing.core.PVector;
 import processing.opengl.PShader;
 import processing.sound.AudioSample;
+import processing.sound.FFT;
 import processing.sound.SoundFile;
 
 import java.io.File;
@@ -15,16 +18,15 @@ import java.io.File;
  */
 public class Oscilloscope extends PApplet {
 
-    public static final float SQRT_2 = sqrt(2);
-    private static final int MAX_DRAWN_SAMPLES = 2048;
+    private static final int MAX_DRAWN_SAMPLES = 4096;
     private static final boolean DRAW_WAVEFORMS = true;
+    private final Shading shading = new Shading(this);
     private final Waveforms waveforms = new Waveforms(this);
-    private final PVector dimensions = new PVector(800, 600);
-    private int smallerDimension;
-
-    private AudioSample audioSample;
-    private PVector lastVertex = new PVector(0, 0);
+    private final PVector lastVertex = new PVector();
     private PShader oscilloscopeShader;
+    private AudioSample audioSample;
+    private FrameRetriever frameRetriever;
+    private FFT fft;
 
     public static void main(String[] args) {
         PApplet.main(Oscilloscope.class);
@@ -38,16 +40,17 @@ public class Oscilloscope extends PApplet {
      */
     @Override
     public void settings() {
-        size((int) dimensions.x, (int) dimensions.y, P2D);
+        size(800, 600, P3D);
     }
 
     @Override
     public void setup() {
-        oscilloscopeShader = loadShader("src/main/resources/shaders/oscilloscope.frag", "src/main/resources/shaders/oscilloscope.vert");
-        surface.setResizable(false);
+        windowResized();
         frameRate(1000);
         fill(0, 200);
         selectInput("Select an audio file", "selectSoundFile");
+        oscilloscopeShader = loadShader("src/main/resources/shaders/oscilloscope.frag", "src/main/resources/shaders/oscilloscope.vert");
+        fft = new FFT(this, MAX_DRAWN_SAMPLES);
     }
 
     @Override
@@ -59,50 +62,24 @@ public class Oscilloscope extends PApplet {
         background(0);
         shader(oscilloscopeShader);
         int currentFrame = audioSample.positionFrame();
-        var positions = retrievePreviousPositions(currentFrame);
+        var positions = frameRetriever.retrieveRecent(currentFrame, MAX_DRAWN_SAMPLES);
+        var dimensions = new PVector(width, height);
+        int minDimension = min(width, height);
 
         for (var position : positions) {
             var vertex = position.copy();
             vertex.y = -vertex.y;
-            vertex.mult(smallerDimension).add(dimensions).mult(0.5f);
+            vertex.mult(minDimension).add(dimensions).mult(0.5f);
 
-            float luminance = calcLuminance(vertex.dist(lastVertex));
+            float luminance = shading.calcLuminance(vertex.dist(lastVertex));
             stroke(0, 255, 0, luminance * 255);
             line(vertex.x, vertex.y, lastVertex.x, lastVertex.y);
-            lastVertex = vertex;
+            lastVertex.set(vertex);
         }
 
         if (DRAW_WAVEFORMS) {
-            waveforms.draw(positions);
+            waveforms.draw(positions, fft.analyze(), audioSample.sampleRate());
         }
-    }
-
-    private PVector[] retrievePreviousPositions(int currentFrame) {
-        int length = min(currentFrame, MAX_DRAWN_SAMPLES);
-        int start = 1 + currentFrame - length;
-        var positions = new PVector[length];
-
-        for (int i = 0; i < length; i++) {
-            int frame = start + i;
-
-            positions[i] = new PVector(
-                    audioSample.read(frame, 0),
-                    audioSample.read(frame, audioSample.channels() - 1)
-            );
-        }
-
-        return positions;
-    }
-
-    private float calcLuminance(float distance) {
-        float t = distance / (smallerDimension * SQRT_2);
-        return pow(1 - t, 10);
-    }
-
-    @Override
-    public void windowResized() {
-        dimensions.set(width, height);
-        smallerDimension = (int) min(dimensions.x, dimensions.y);
     }
 
     public void selectSoundFile(File selection) {
@@ -110,6 +87,9 @@ public class Oscilloscope extends PApplet {
             exit();
         } else {
             audioSample = new SoundFile(this, selection.getAbsolutePath());
+            frameRetriever = new FrameRetriever(audioSample);
+            fft.input(audioSample);
+            lastVertex.set(0, 0);
             audioSample.play();
         }
     }

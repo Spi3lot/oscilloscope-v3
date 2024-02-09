@@ -1,6 +1,5 @@
 package oscilloscope.service;
 
-import lombok.RequiredArgsConstructor;
 import processing.core.PApplet;
 import processing.core.PShape;
 import processing.core.PVector;
@@ -12,12 +11,16 @@ import static processing.core.PApplet.min;
  * @author Emilio Zottel (5AHIF)
  * @since 09.02.2024, Fr.
  */
-@RequiredArgsConstructor
-public class Waveforms {
+public record Waveforms(PApplet pApplet) {
 
-    private final PApplet pApplet;
+    private static PShape initWaveformShape(PShape shape) {
+        shape.beginShape();
+        shape.stroke(255, 0, 0);
+        shape.noFill();
+        return shape;
+    }
 
-    public void draw(PVector[] positions) {
+    public void draw(PVector[] positions, float[] spectrum, int sampleRate) {
         if (pApplet.width == pApplet.height) {
             return;
         }
@@ -26,20 +29,21 @@ public class Waveforms {
         var offsets = new PVector(stripCenter, stripCenter + (pApplet.width + pApplet.height) * 0.5f);
         var leftWaveform = initWaveformShape(pApplet.createShape());
         var rightWaveform = initWaveformShape(pApplet.createShape());
+        int strongestFrequency = findStrongestFrequency(spectrum);
+        int frameCount = sampleRate / strongestFrequency;
+        int vertexCount = min(frameCount, positions.length);
 
         if (pApplet.width > pApplet.height) {
-            int max = min(pApplet.height, positions.length);
-
-            for (int y = 0; y < max; y++) {
-                var waveformX = PVector.mult(positions[y], stripCenter).add(offsets);
+            for (int i = 0; i < vertexCount; i++) {
+                var waveformX = PVector.mult(positions[i], stripCenter).add(offsets);
+                float y = (float) (frameCount * i) / vertexCount;
                 leftWaveform.vertex(waveformX.x, y);
                 rightWaveform.vertex(waveformX.y, y);
             }
         } else {
-            int max = min(pApplet.width, positions.length);
-
-            for (int x = 0; x < max; x++) {
-                var waveformY = PVector.mult(positions[x], stripCenter).add(offsets);
+            for (int i = 0; i < vertexCount; i++) {
+                float x = (float) (frameCount * i) / vertexCount;
+                var waveformY = PVector.mult(positions[i], stripCenter).add(offsets);
                 leftWaveform.vertex(x, waveformY.x);
                 rightWaveform.vertex(x, waveformY.y);
             }
@@ -51,11 +55,18 @@ public class Waveforms {
         pApplet.shape(rightWaveform);
     }
 
-    private static PShape initWaveformShape(PShape shape) {
-        shape.beginShape();
-        shape.stroke(255, 0, 0);
-        shape.noFill();
-        return shape;
+    private int findStrongestFrequency(float[] spectrum) {
+        int strongestFrequency = 0;
+        float strongestAmplitude = 0;
+
+        for (int i = 0; i < spectrum.length; i++) {
+            if (spectrum[i] > strongestAmplitude) {
+                strongestAmplitude = spectrum[i];
+                strongestFrequency = i;
+            }
+        }
+
+        return strongestFrequency;
     }
 
 }

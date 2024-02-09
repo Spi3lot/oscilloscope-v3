@@ -8,3 +8,7 @@
 .gitignore,a\5\a5cc2925ca8258af241be7e5b0381edf30266302
 a
 1src/main/java/oscilloscope/service/Waveforms.java,0\c\0caabe1d95e733ce83eda3acfd493f5f53fe070f
+f
+6src/main/java/oscilloscope/service/FrameRetriever.java,d\7\d72b9079471a3b9fedb7cd66ae28c7f87637c3e9
+_
+/src/main/java/oscilloscope/service/Shading.java,9\9\99a61c13e43b77869c151ad956c221f6ca8e623a
