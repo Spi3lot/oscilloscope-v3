@@ -1,10 +1,11 @@
 uniform mat4 transform;
-uniform vec4 viewport;
 
 attribute vec4 position;
 attribute vec4 color;
-attribute vec4 direction;
+
+out vec4 vertColor;
 
 void main() {
+    vertColor = color;
     gl_Position = transform * position;
 }
