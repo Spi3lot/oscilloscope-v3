@@ -62,23 +62,23 @@ public class Oscilloscope extends PApplet {
         background(0);
         shader(oscilloscopeShader);
         int currentFrame = audioSample.positionFrame();
-        var positions = frameRetriever.retrieveRecent(currentFrame, MAX_DRAWN_SAMPLES);
+        var positions = frameRetriever.retrieveRecent(currentFrame, (DRAW_WAVEFORMS) ? audioSample.sampleRate() / 5 : MAX_DRAWN_SAMPLES);
         var dimensions = new PVector(width, height);
         int minDimension = min(width, height);
 
-        for (var position : positions) {
-            var vertex = position.copy();
+        for (int i = max(0, positions.length - MAX_DRAWN_SAMPLES); i < positions.length; i++) {
+            var vertex = positions[i].copy();
             vertex.y = -vertex.y;
             vertex.mult(minDimension).add(dimensions).mult(0.5f);
 
             float luminance = shading.calcLuminance(vertex.dist(lastVertex));
             stroke(0, 255, 0, luminance * 255);
-            line(vertex.x, vertex.y, lastVertex.x, lastVertex.y);
+            line(lastVertex.x, lastVertex.y, vertex.x, vertex.y);
             lastVertex.set(vertex);
         }
 
         if (DRAW_WAVEFORMS) {
-            waveforms.draw(positions, fft.analyze(), audioSample.sampleRate());
+            waveforms.draw(positions, fft, audioSample.sampleRate());
         }
     }
 
