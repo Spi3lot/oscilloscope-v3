@@ -13,7 +13,7 @@ import static processing.core.PApplet.abs;
  */
 public record Waveforms(PApplet pApplet) {
 
-    private static final boolean PHASE_SHIFT = false;
+    private static final boolean PHASE_SHIFT = true;
 
     private static PShape initWaveformShape(PShape shape) {
         shape.beginShape();
@@ -22,48 +22,11 @@ public record Waveforms(PApplet pApplet) {
         return shape;
     }
 
-    public void draw(PVector[] positions, FFT fft, int sampleRate) {
-        if (pApplet.width == pApplet.height) {
-            return;
-        }
-
-        float halfStripThickness = abs(pApplet.width - pApplet.height) * 0.25f;
-        var offsets = new PVector(halfStripThickness, halfStripThickness + (pApplet.width + pApplet.height) * 0.5f);
-        var leftWaveform = initWaveformShape(pApplet.createShape());
-        var rightWaveform = initWaveformShape(pApplet.createShape());
-        int phaseMissingFrames = 0;
-
-        if (PHASE_SHIFT) {
-            var spectrum = fft.analyze();
-            double phaseSeconds = 1.0 / findStrongestFrequency(spectrum);
-            int phaseFrames = (int) (sampleRate * phaseSeconds);
-            int phaseStartingFrames = positions.length % phaseFrames;
-            phaseMissingFrames = phaseFrames - phaseStartingFrames;
-        }
-
-        if (pApplet.width > pApplet.height) {
-            for (int i = 0; i < positions.length - phaseMissingFrames; i++) {
-                var waveformX = PVector.mult(positions[i], halfStripThickness).add(offsets);
-                float y = (float) pApplet.height * (i + phaseMissingFrames) / positions.length;
-                leftWaveform.vertex(waveformX.x, y);
-                rightWaveform.vertex(waveformX.y, y);
-            }
-        } else {
-            for (int i = 0; i < positions.length - phaseMissingFrames; i++) {
-                float x = (float) pApplet.width * (i + phaseMissingFrames) / positions.length;
-                var waveformY = PVector.mult(positions[i], -halfStripThickness).add(offsets);
-                leftWaveform.vertex(x, waveformY.x);
-                rightWaveform.vertex(x, waveformY.y);
-            }
-        }
-
-        leftWaveform.endShape();
-        rightWaveform.endShape();
-        pApplet.shape(leftWaveform);
-        pApplet.shape(rightWaveform);
+    private static double findStrongestFrequency(float[] spectrum, int sampleRate) {
+        return (double) sampleRate * findStrongestFrequencyIndex(spectrum) / spectrum.length;
     }
 
-    private int findStrongestFrequency(float[] spectrum) {
+    private static int findStrongestFrequencyIndex(float[] spectrum) {
         float strongestAmplitude = 0;
         int strongestFrequency = 1;
 
@@ -75,6 +38,46 @@ public record Waveforms(PApplet pApplet) {
         }
 
         return strongestFrequency;
+    }
+
+    public void draw(PVector[] positions, FFT fft, int sampleRate) {
+        if (pApplet.width == pApplet.height) {
+            return;
+        }
+
+        float halfStripThickness = abs(pApplet.width - pApplet.height) * 0.25f;
+        var offsets = new PVector(halfStripThickness, halfStripThickness + (pApplet.width + pApplet.height) * 0.5f);
+        var leftWaveform = initWaveformShape(pApplet.createShape());
+        var rightWaveform = initWaveformShape(pApplet.createShape());
+        int phaseOffsetFrames = 0;
+
+        if (PHASE_SHIFT) {
+            var spectrum = fft.analyze();
+            double phaseSeconds = 1.0 / findStrongestFrequency(spectrum, sampleRate);
+            int phaseFrames = (int) (sampleRate * phaseSeconds);
+            phaseOffsetFrames = positions.length % phaseFrames;
+        }
+
+        if (pApplet.width > pApplet.height) {
+            for (int i = 0; i < positions.length - phaseOffsetFrames; i++) {
+                var waveformX = PVector.mult(positions[i], halfStripThickness).add(offsets);
+                float y = (float) pApplet.height * (i + phaseOffsetFrames) / positions.length;
+                leftWaveform.vertex(waveformX.x, y);
+                rightWaveform.vertex(waveformX.y, y);
+            }
+        } else {
+            for (int i = 0; i < positions.length - phaseOffsetFrames; i++) {
+                float x = (float) pApplet.width * (i + phaseOffsetFrames) / positions.length;
+                var waveformY = PVector.mult(positions[i], -halfStripThickness).add(offsets);
+                leftWaveform.vertex(x, waveformY.x);
+                rightWaveform.vertex(x, waveformY.y);
+            }
+        }
+
+        leftWaveform.endShape();
+        rightWaveform.endShape();
+        pApplet.shape(leftWaveform);
+        pApplet.shape(rightWaveform);
     }
 
 }
