@@ -12,3 +12,5 @@ f
 6src/main/java/oscilloscope/service/FrameRetriever.java,d\7\d72b9079471a3b9fedb7cd66ae28c7f87637c3e9
 _
 /src/main/java/oscilloscope/service/Shading.java,9\9\99a61c13e43b77869c151ad956c221f6ca8e623a
+9
+	README.md,8\e\8ec9a00bfd09b3190ac6b22251dbb1aa95a0579d

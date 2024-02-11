@@ -13,7 +13,7 @@ import static processing.core.PApplet.abs;
  */
 public record Waveforms(PApplet pApplet) {
 
-    private static final boolean PHASE_SHIFT = true;
+    private static final boolean PHASE_SHIFT = false;
 
     private static PShape initWaveformShape(PShape shape) {
         shape.beginShape();
