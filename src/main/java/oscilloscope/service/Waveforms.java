@@ -13,7 +13,7 @@ import static processing.core.PApplet.abs;
  */
 public record Waveforms(PApplet pApplet) {
 
-    private static final boolean PHASE_SHIFT = false;
+    private static final boolean PHASE_MATCH = false;
 
     private static PShape initWaveformShape(PShape shape) {
         shape.beginShape();
@@ -51,7 +51,7 @@ public record Waveforms(PApplet pApplet) {
         var rightWaveform = initWaveformShape(pApplet.createShape());
         int phaseOffsetFrames = 0;
 
-        if (PHASE_SHIFT) {
+        if (PHASE_MATCH) {
             var spectrum = fft.analyze();
             double phaseSeconds = 1.0 / findStrongestFrequency(spectrum, sampleRate);
             int phaseFrames = (int) (sampleRate * phaseSeconds);
