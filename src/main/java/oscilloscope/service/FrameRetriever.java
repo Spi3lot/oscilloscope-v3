@@ -12,7 +12,7 @@ import static processing.core.PApplet.min;
 public record FrameRetriever(AudioSample audioSample) {
 
     public PVector[] retrieveRecent(int currentFrame, int length) {
-        int frameCount = min(currentFrame, length);
+        int frameCount = min(1 + currentFrame, length);
         int start = 1 + currentFrame - frameCount;
         var positions = new PVector[frameCount];
 
