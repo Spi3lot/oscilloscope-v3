@@ -14,6 +14,7 @@ public record Shading(PApplet pApplet) {
     public static final float SQRT_2 = sqrt(2);
 
     public void init() {
+        pApplet.frameRate(1000);
         pApplet.strokeCap(ROUND);
         pApplet.strokeJoin(ROUND);
     }
