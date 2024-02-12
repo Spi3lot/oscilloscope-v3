@@ -47,7 +47,7 @@ public class Oscilloscope extends PApplet {
     public void setup() {
         frameRate(1000);
         fill(0, 200);
-        selectSoundFile();
+        selectInput("Select an audio file", "selectSoundFile");
         fft = new FFT(this, MAX_DRAWN_SAMPLES);
         oscilloscopeShader = loadShader("src/main/resources/shaders/oscilloscope.frag", "src/main/resources/shaders/oscilloscope.vert");
     }
@@ -81,13 +81,9 @@ public class Oscilloscope extends PApplet {
         }
     }
 
-    private void selectSoundFile() {
-        selectInput("Select an audio file", "selectSoundFile");
-    }
-
     public void selectSoundFile(File selection) {
         if (selection == null) {
-            selectSoundFile();
+            exit();
         } else {
             audioSample = new SoundFile(this, selection.getAbsolutePath());
             frameRetriever = new FrameRetriever(audioSample);
