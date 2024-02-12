@@ -81,10 +81,11 @@ public class Oscilloscope extends PApplet {
         if (selection == null) {
             exit();
         } else {
-            audioSample = new SoundFile(this, selection.getAbsolutePath());
-            frameRetriever = new FrameRetriever(audioSample);
-            fft.input(audioSample);
+            var sample = new SoundFile(this, selection.getAbsolutePath());
+            frameRetriever = new FrameRetriever(sample);
+            fft.input(sample);
             lastVertex.set(0, 0);
+            audioSample = sample;
             audioSample.play();
         }
     }
