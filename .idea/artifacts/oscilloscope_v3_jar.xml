@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="oscilloscope-v3:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/oscilloscope_v3_jar</output-path>
+    <root id="archive" name="oscilloscope-v3.jar">
+      <element id="module-output" name="oscilloscope-v3" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/natives/core.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/natives/jogl-all.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/natives/gluegen-rt.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/sound/sound.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/sound/javamp3-1.0.4.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/sound/jsyn-20171016.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
